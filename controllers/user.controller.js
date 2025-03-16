@@ -213,7 +213,7 @@ async function getUserDetails(req, res) {
 
   try {
     // check if user exists by email
-    const existingUser = await User.findById(req.user.id);
+    const existingUser = await User.findById(req.user.id).select("-password");
     if (!existingUser) {
       return res.status(400).json({
         message: "Invalid email",
@@ -319,20 +319,17 @@ async function resetPassword(req, res) {
   }
 
   try {
-    // validate token
-    const findUser = await User.findOne({ resetPasswordToken: token });
+    // validate token and check for token expiry
+    const findUser = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: {
+        $gt: Date.now(),
+      },
+    });
     if (!findUser) {
       return res.status(400).json({
         message: "Invalid Token",
         success: false,
-      });
-    }
-
-    // check for password expiry
-    if (Date.now() > findUser.resetPasswordExpires) {
-      return res.status(400).json({
-        message: "Password reset token expired, please generate new token",
-        success: true,
       });
     }
 
@@ -370,12 +367,7 @@ async function resetPassword(req, res) {
 
 async function logoutUser(_, res) {
   // remove jwt cookie
-  const cookieOptions = {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: new Date(0),
-  };
-  res.cookie("fullStackSpeedJsAuthToken", "", cookieOptions);
+  res.cookie("fullStackSpeedJsAuthToken", "");
 
   // success message to user
   return res.status(200).json({
