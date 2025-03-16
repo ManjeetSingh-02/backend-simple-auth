@@ -10,6 +10,8 @@
 ├── controllers
 │   └── user.controller.js
 ├── index.js
+├── middlewares
+│   └── auth.middleware.js
 ├── models
 │   └── User.model.js
 ├── package.json
@@ -21,7 +23,7 @@
     ├── email.js
     └── validate.js
 
-5 directories, 9 files
+6 directories, 10 files
 ```
 
 ## Getting Started
